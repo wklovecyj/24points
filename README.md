@@ -1,3 +1,4 @@
+![Snipaste_2025-03-22_19-24-54](https://github.com/user-attachments/assets/90fcd55f-b19d-469c-8285-4eb621b0370f)
 # 24points
 ## 这是我和ai写的一个24点游戏
 
