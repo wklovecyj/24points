@@ -24,6 +24,8 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.TextField;
 public class Main_24 extends Application {
+    //检查是否为表达式中的数字是否是随机到的点数的标志
+    boolean flag_iscp = true;
     //扑克牌图片Image类的集合
     private final List<Image>cardImages = new ArrayList<>(52);
     //加载扑克牌图片的方法
@@ -41,6 +43,8 @@ public class Main_24 extends Application {
 
     //生成存放四个随机数的数组
     int[] rNums = new int[4];
+    //生成四个随机数对应的点数的数组
+    int[] points = new int[4];
     //生成4个随机数的方法
     public void getFourRandomNums() {
         Random r = new Random();
@@ -48,8 +52,29 @@ public class Main_24 extends Application {
             rNums[i] = r.nextInt(52) + 1;
         }
     }
+    //生成四个随机数对应的点数的方法
+    public void getFourPoints() {
+        for(int i = 0;i < 4; i++) {
+            points[i] = (rNums[i] - 1) % 13 + 1;
+        }
+    }
+    //检查输入的表达式中是否都是对应点数的方法
+    public boolean isCorrectPoints(List<Double> num) {
+        for(int i = 0; i < num.size(); i++) {
+            boolean found = false;
+            for(int j = 0; j < num.size(); j++) {
+                if((double)points[i] == num.get(j)) {
+                    found = true;
+                    break;
+                }
+            }
+            if(!found) return false;
+        }
+        return true;
+    }
     //检查是否为24点的方法,这里我问了ai
     public boolean is24(String exp) {
+        flag_iscp = true;
         List<String> tokens = new ArrayList<>();
         Matcher matcher = Pattern.compile("\\d+|[-+*/]").matcher(exp);
         while (matcher.find()) {
@@ -84,6 +109,11 @@ public class Main_24 extends Application {
             } else {
                 operators.add(tokens.get(i).charAt(0));
             }
+        }
+        //检查是否为表达式中的数字是否是随机到的点数
+        if(!isCorrectPoints(numbers)) {
+            flag_iscp = false;
+            return false;
         }
         //处理乘除运算
         int i = 0;
@@ -146,8 +176,9 @@ public class Main_24 extends Application {
     public void start(Stage st) {
         //第一步，加载扑克牌图片
         loadCards();
-        //第二步，生成四个随机数
+        //第二步，生成四个随机数和对应的点数
         getFourRandomNums();
+        getFourPoints();
         //第三步，创建图片视图并显示
         ImageView iv1 = new ImageView();
         ImageView iv2 = new ImageView();
@@ -162,6 +193,7 @@ public class Main_24 extends Application {
         iv4.setFitHeight(200);
         iv4.setFitWidth(150);
         //把对应的图片放到对应的ImageView控件中
+        //这里我有一个新的想法，就是，不用直接根据随机数直接来，或许可以再搞一个ArrayList,然后把对应的图片放进去，但是是不是多此一举呢？
         iv1.setImage(cardImages.get(rNums[0] - 1));
         iv2.setImage(cardImages.get(rNums[1] - 1));
         iv3.setImage(cardImages.get(rNums[2] - 1));
@@ -185,12 +217,17 @@ public class Main_24 extends Application {
            if(is24(exp)) {
                al.setContentText(exp + "= 24 成立！");
            } else {
-               al.setContentText(exp + "= 24 不成立！");
+               if (!flag_iscp) {
+                   al.setContentText(exp + "中的数字不是扑克牌中的点数！");
+               } else {
+                   al.setContentText(exp + "= 24 不成立！");
+               }
            }
            al.showAndWait();
         });
         refresh.setOnAction(e -> {
            getFourRandomNums();
+           getFourPoints();
            iv1.setImage(cardImages.get(rNums[0] - 1));
            iv2.setImage(cardImages.get(rNums[1] - 1));
            iv3.setImage(cardImages.get(rNums[2] - 1));
@@ -227,3 +264,4 @@ public class Main_24 extends Application {
 //目前的问题是：
 // 1，我不知道怎么生成24点的官方解
 // 2，控件的布局不是很好看
+// 3，我没有检查输入的表达式是否合法（即是不是我随机到的点数）  已经解决
